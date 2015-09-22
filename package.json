@@ -1,0 +1,45 @@
+{
+  "name": "tool.fs",
+  "version": "0.1.0-beta.1",
+  "description": "A lean collection of node utilities focused on the fs module",
+  "main": "index.js",
+  "scripts": {
+    "test": "test/test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/papiro/tool.fs.git"
+  },
+  "keywords": [
+    "toolbox",
+    "fs",
+    "cpdir",
+    "cpfile",
+    "mkdir",
+    "mkdirp",
+    "dirtree",
+    "mkdirtree",
+    "mklink",
+    "link",
+    "symlink",
+    "mksymlink",
+    "filesystem",
+    "utilities",
+    "io",
+    "tool.fs",
+    "rmr",
+    "rm",
+    "rmdir",
+    "clrdir"
+  ],
+  "author": "papiro",
+  "license": "Unlicense",
+  "bugs": {
+    "url": "https://github.com/papiro/tool.fs/issues"
+  },
+  "homepage": "https://github.com/papiro/tool.fs#readme",
+  "devDependencies": {
+    "babel": "latest",
+    "minimatch": "latest"
+  }
+}
