@@ -11,6 +11,6 @@ assert.strictEqual(cpfiles([{
 	src : "../*.json",
 	dest : "cpdirTestDest"
 }], function(err){
-	err && return console.error(err)
+	if(err) return console.error(err)
 	return fs.readdirSync("cpdirTestDest")
 }), ["package.json"])

@@ -1,6 +1,6 @@
 {
   "name": "tool.fs",
-  "version": "0.1.0-beta.1",
+  "version": "0.2.0-beta.0",
   "description": "A lean collection of node utilities focused on the fs module",
   "main": "index.js",
   "scripts": {
@@ -40,6 +40,7 @@
   "homepage": "https://github.com/papiro/tool.fs#readme",
   "devDependencies": {
     "babel": "latest",
-    "minimatch": "latest"
+    "minimatch": "latest",
+    "youtil": "latest"
   }
 }

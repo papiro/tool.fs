@@ -1,6 +1,6 @@
 var fs = require('fs')
 ,   path = require('path')
-,   util = require('util')
+,   util = require('youtil')
 
 ,   minimatch = require("minimatch")
 
@@ -10,21 +10,22 @@ var fs = require('fs')
 
 exports.cpfiles = function(srcDestObjArr, callback) {
     var callback = typeof callback === "function" ? callback : noop
-    ,   src = path.resolve(config.src || ".") + "/"
-    ,   dest = path.resolve(config.dest || ".") + "/"
+    // ,   src = path.resolve(config.src || ".") + "/"
+    // ,   dest = path.resolve(config.dest || ".") + "/"
 
-    util.isArray(srcDestObjArr) || return callback(new Error("First argument to cpfiles must be a valid array."))
+    if( !util.isArray(srcDestObjArr) ) return callback(new Error("First argument to cpfiles must be a valid array."))
     srcDestObjArr.forEach(function(srcDestObj){
         let src = srcDestObj.src
         ,   dest = srcDestObj.dest
 
-        util.isObject(srcDestObj) || return callback(new Error("Array must contain valid objects."))
+        if( !util.isObject(srcDestObj) ) return callback(new Error("Array must contain valid objects."))
         if(src && dest) return callback(new Error("Object must contain a valid 'src' & 'dest' property."))
         else {
             fs.stat(dest, function(err, stats){
                 if(err){
                     exports.mkdirp(dest, function(err){
-                        (err && return callback(err)) || cpfiles(src, dest)
+                        if(err) return callback(err)
+                        cpfiles(src, dest)
                     })
                 } else if(stats.isDirectory()) {
                     cpfiles(src, dest)
@@ -43,7 +44,7 @@ exports.cpfiles = function(srcDestObjArr, callback) {
         ,   filePath = fileParts.join(path.sep)
 
         fs.readdir(filePath, function(err, res){
-            err && return callback(err)
+            if(err) return callback(err)
             res.filter(minimatch.filter(pattern)).forEach(function(file){
                 cpfile(null, src, dest)
             })
@@ -55,14 +56,14 @@ exports.cpfiles = function(srcDestObjArr, callback) {
         branch = branch || ""
 
         fs.readdir(src+branch, function(err, res){
-            err && callback(err)
+            if(err) callback(err)
             res.forEach(function(file){
                 pending++            
                 var srcFile = src+branch+file
                 ,   destFile = dest+branch+file
 
                 fs.lstat(srcFile, function(err, stats){
-                    err && callback(err)
+                    if(err) callback(err)
                     if(stats.isFile()) {
                         var i = fs.createReadStream(srcFile, { mode : stats.mode })
                         ,   o = fs.createWriteStream(destFile, { mode : stats.mode })
@@ -129,7 +130,7 @@ exports.mkdirp = function( _path, callback = function(){} ) {
         if( parts.length > 0 ) {
             let current = parts.shift()
             fs.mkdir( current, function( err, res ) {
-                err && return callback(err)
+                if(err) return callback(err)
                 process.chdir( current )
                 main()
             })
