@@ -1,0 +1,32 @@
+{
+	"dirObj1" : {
+		"test": {
+			"bomb_shelt": {
+				"testDir5": {
+					"sibling": {
+						"child1": {
+							"grandchild": ""
+						},
+						"child2": ""
+					}
+				}
+			}			
+		}
+	},
+	"dirObj2" : {
+		"test": {
+			"bomb_shelt": {
+				"testDir6": {
+					"sibling1": {
+						"child1": "",
+						"child2": {
+							"grandchild": ""
+						},
+						"child3": ""
+					},
+					"sibling2": ""
+				}
+			}			
+		}
+	}
+}

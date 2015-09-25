@@ -8,7 +8,7 @@ var fs = require('fs')
 ,   squareOne = process.cwd()
 ,   noop = function(){}
 
-exports.cpfiles = function(srcDestObjArr, callback) {
+exports.cpfile = function(srcDestObjArr, callback) {
     var callback = typeof callback === "function" ? callback : noop
     // ,   src = path.resolve(config.src || ".") + "/"
     // ,   dest = path.resolve(config.dest || ".") + "/"
@@ -19,7 +19,7 @@ exports.cpfiles = function(srcDestObjArr, callback) {
         ,   dest = srcDestObj.dest
 
         if( !util.isPlainObject(srcDestObj) ) return callback(new Error("Array must contain valid objects."))
-        if(src && dest) return callback(new Error("Object must contain a valid 'src' & 'dest' property."))
+        if(!src && !dest) return callback(new Error("Object must contain a valid 'src' & 'dest' property."))
         else {
             fs.stat(dest, function(err, stats){
                 if(err){
@@ -41,37 +41,37 @@ exports.cpfiles = function(srcDestObjArr, callback) {
     function cpfiles(src, dest){
         let fileParts = src.split(path.sep)
         ,   pattern = fileParts.pop()
-        ,   filePath = fileParts.join(path.sep)
+        ,   filePath = fileParts.join(path.sep)+path.sep
+            dest = dest[dest.length-1]===path.sep? dest : dest+path.sep
 
         fs.readdir(filePath, function(err, res){
             if(err) return callback(err)
             res.filter(minimatch.filter(pattern)).forEach(function(file){
-                cpfile(null, src, dest)
+                pending++
+                fs.lstat(filePath+file, function(err, stats){
+                    if(err) return callback(err)
+                    cpfile(filePath+file, dest+file, stats)                    
+                })
             })
         })
     }
 
     // branch is passed in by recursive function calls.
-    function cpfile(branch, src, dest) {
+    function cpdir(branch, src, dest){
         branch = branch || ""
 
         fs.readdir(src+branch, function(err, res){
-            if(err) callback(err)
+            if(err) return callback(err)
+
             res.forEach(function(file){
                 pending++            
                 var srcFile = src+branch+file
                 ,   destFile = dest+branch+file
 
                 fs.lstat(srcFile, function(err, stats){
-                    if(err) callback(err)
+                    if(err) return callback(err)
                     if(stats.isFile()) {
-                        var i = fs.createReadStream(srcFile, { mode : stats.mode })
-                        ,   o = fs.createWriteStream(destFile, { mode : stats.mode })
-                        
-                        i.pipe(o)
-                        i.on("end", function(){
-                            --pending || callback()                        
-                        })
+                        cpfile(srcFile, destFile, stats)
                     } else if(stats.isDirectory()) {
                         fs.mkdir(destFile, function(err) {
                             if(err) {
@@ -80,7 +80,7 @@ exports.cpfiles = function(srcDestObjArr, callback) {
                                         console.log("%s exists so skipping...", destFile)
                                     break
                                     default:
-                                        callback(err)                   
+                                        return callback(err)                   
                                 }
                             }
                             --pending || callback()
@@ -90,6 +90,16 @@ exports.cpfiles = function(srcDestObjArr, callback) {
                 })
             })
         })
+    }
+
+    function cpfile(srcFile, destFile, stats) {
+        var i = fs.createReadStream(srcFile, { mode : stats.mode })
+        ,   o = fs.createWriteStream(destFile, { mode : stats.mode })
+        
+        i.pipe(o)
+        i.on("end", function(){
+            if(!--pending) return callback()
+        })        
     }
 }
 
