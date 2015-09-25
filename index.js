@@ -18,7 +18,7 @@ exports.cpfiles = function(srcDestObjArr, callback) {
         let src = srcDestObj.src
         ,   dest = srcDestObj.dest
 
-        if( !util.isObject(srcDestObj) ) return callback(new Error("Array must contain valid objects."))
+        if( !util.isPlainObject(srcDestObj) ) return callback(new Error("Array must contain valid objects."))
         if(src && dest) return callback(new Error("Object must contain a valid 'src' & 'dest' property."))
         else {
             fs.stat(dest, function(err, stats){
@@ -95,42 +95,40 @@ exports.cpfiles = function(srcDestObjArr, callback) {
 
 exports.mkdirTree = function( dirTree, callback, parent ) {
     var nodes = Object.keys(dirTree)
-    ,   parent = parent ? parent+"/" : ""
+    ,   parent = parent ? ~parent.indexOf(path.sep, parent.length-1) ? parent : parent+"/" : ""
 
     nodes.forEach(function(dir){
-        ++pending;
+        ++pending
         fs.mkdir(parent+dir, function(err){
-            --pending;
-            exports.mkdirTree(dirTree[dir], callback, parent+dir);
-            if( pending === 0 && callback ) {
-                callback();
-            }
-        });
-    });
+            if(err && err.code !== "EEXIST") return callback(err)
+            --pending
+            exports.mkdirTree(dirTree[dir], callback, parent+dir)
+            pending === 0 && callback && callback()
+        })
+    })
 }
 
-exports.mkdirTreeSync = function( dirTree ) {
+exports.mkdirTreeSync = function( dirTree, root=true ) {
     for( var node in dirTree ) {
-        fs.mkdirSync( node );
-        process.chdir( node + '/' );
-        exports.mkdirTreeSync( dirTree[node] );
+        try{fs.mkdirSync( node )} 
+        catch(e){if(e.code !== "EEXIST") throw e}
+        process.chdir( node + '/' )
+        exports.mkdirTreeSync( dirTree[node], false )
     }
-    process.chdir( '../' );
+    !root && process.chdir( '../' )
 }
 
 exports.mkdirp = function( _path, callback = function(){} ) {
     if( typeof _path !== "string" ) return callback(new Error( "mkdirp needs a valid path."))
 
-    // typeof callback !== "function" && callback = function(){}
-
-    var parts = path.resolve(_path.replace("~", process.env.HOME)).substr(1).split(path.sep)
+    let parts = path.resolve(_path.replace("~", process.env.HOME)).substr(1).split(path.sep)
     process.chdir( path.sep )
 
-    (function main() {
+    ;(function main() {
         if( parts.length > 0 ) {
             let current = parts.shift()
             fs.mkdir( current, function( err, res ) {
-                if(err) return callback(err)
+                if(err && err.code !== "EEXIST") return callback(err)
                 process.chdir( current )
                 main()
             })
