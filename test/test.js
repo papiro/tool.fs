@@ -77,28 +77,41 @@ describe("cpfile", function(){
 			src: "test/data/data.json",
 			dest: bomb_shelt+"cpfile"
 		}, {
-			src: "node_modules/.bin/babel",
+			src: "node_modules/jasmine/README.md",
 			dest: bomb_shelt+"cpfile"
 		}, {
 			src: "node_modules/babel/src",
 			dest: bomb_shelt+"cpfile"
 		}], function(err, res){
 			expect(err).toBeUndefined()
-			// expect(fs.statSync(bomb_shelt+"cpfile/data.json").isFile()).toBeTruthy()
-			// expect(fs.statSync(bomb_shelt+"cpfile/babel").isFile()).toBeTruthy()
-			// expect(fs.statSync(bomb_shelt+"cpfile/youtil").isDirectory()).toBeTruthy()
+			expect(fs.statSync(bomb_shelt+"cpfile/data.json").isFile()).toBeTruthy()
+			expect(fs.statSync(bomb_shelt+"cpfile/README.md").isFile()).toBeTruthy()
+			expect(fs.statSync(bomb_shelt+"cpfile/babel/util.js").isFile()).toBeTruthy()
 			done()
 		})
 	})
-	it("should handle globbing", function(done){
+	it("should handle ** globbing", function(done){
 		cpfile([{
-			src: bomb_shelt+"cpfile/**",
+			src: "node_modules/babel/lib/**",
 			dest: bomb_shelt+"cpfile/globbing/doubleStar"
-		}, {
+		}], function(err, res){
+			expect(err).toBeUndefined()
+			done()
+		})
+	})
+	it("should handle ? globbing", function(done){
+		cpfile([{
 			src: bomb_shelt+"../../node_modules/youtil/*.??",
 			dest: bomb_shelt+"cpfile/globbing/questionMark"
-		}, {
-			src: bomb_shelt+"cpfile/*",
+		}], function(err, res){
+			expect(err).toBeUndefined()
+			expect(fs.statSync(bomb_shelt+"cpfile/globbing/questionMark/README.md").isFile()).toBeTruthy()
+			done()
+		})
+	})
+	it("should handle * globbing", function(done){
+		cpfile([{
+			src: "node_modules/babel/lib/*",
 			dest: bomb_shelt+"cpfile/globbing/singleStar"
 		}], function(err, res){
 			expect(err).toBeUndefined()

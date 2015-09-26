@@ -13,8 +13,8 @@ exports.cpfile = function(srcDestObjArr, callback) {
 
     if( !util.isArray(srcDestObjArr) ) return callback(new Error("First argument to cpfiles must be a valid array."))
     srcDestObjArr.forEach(function(srcDestObj){
-        let src = srcDestObj.src
-        ,   dest = srcDestObj.dest
+        let src = path.resolve(srcDestObj.src)
+        ,   dest = path.resolve(srcDestObj.dest)
 
         if( !util.isPlainObject(srcDestObj) ) return callback(new Error("Array must contain valid objects."))
         if(!src || !dest) return callback(new Error("Object must contain a valid 'src' & 'dest' property."))
@@ -39,19 +39,26 @@ exports.cpfile = function(srcDestObjArr, callback) {
     function cpfiles(src, dest){
         let fileParts = src.split(path.sep)
         ,   pattern = fileParts.pop()
-        ,   filePath = fileParts.join(path.sep)+path.sep
-            dest = dest[dest.length-1]===path.sep? dest : dest+path.sep
+        ,   filePath = fileParts.join(path.sep)
 
         fs.readdir(filePath, function(err, res){
             if(err) return callback(err)
-            res.filter(minimatch.filter(pattern)).forEach(function(file){
-                let srcFile = path.resolve(filePath+file)
 
+            res.filter(minimatch.filter(pattern)).forEach(function(file){
                 pending++
+
+                let srcFile = filePath+path.sep+file
+                ,   destFile = dest+path.sep+file
+
                 fs.lstat(srcFile, function(err, stats){
                     if(err) return callback(err)
-                    stats.isFile() && cpfile(srcFile, dest+file, stats)
-                    stats.isDirectory() && cpdir(null, srcFile, dest)
+                    if(stats.isFile())
+                        cpfile(srcFile, destFile, stats)
+                    else if(stats.isDirectory()){
+                        pending--
+                        cpdir(null, srcFile, dest)}
+                    else 
+                        pending--
                 })
             })
         })
@@ -66,6 +73,7 @@ exports.cpfile = function(srcDestObjArr, callback) {
 
             res.forEach(function(file){
                 pending++            
+
                 var srcFile = src+branch+file
                 ,   destFile = dest+branch+file
 
@@ -74,7 +82,6 @@ exports.cpfile = function(srcDestObjArr, callback) {
                     if(stats.isFile()) {
                         cpfile(srcFile, destFile, stats)
                     } else if(stats.isDirectory()) {
-                        console.log("making ", destFile)
                         fs.mkdir(destFile, function(err) {
                             if(err) {
                                 switch(err.code) {
@@ -86,9 +93,9 @@ exports.cpfile = function(srcDestObjArr, callback) {
                                 }
                             }
                             --pending || callback()
-                            cpdir(branch+file+"/")
+                            cpdir(branch+file+"/", src, dest)
                         })
-                    }
+                    } else pending--
                 })
             })
         })
