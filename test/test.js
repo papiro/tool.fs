@@ -38,10 +38,10 @@ describe("mkdirp", function(){
 			done()
 		})
 	})
-	it("should translate \"~\" into the user's home directory ~/Workspace/tool.fs/"+bomb_shelt+"testDir4/one/two/three", function(done){
-		mkdirp("~/Workspace/tool.fs/"+bomb_shelt+"testDir4/one/two/three", function(err, res){
+	it("should translate \"~\" into the user's home directory ~/toolFSTest/"+bomb_shelt+"testDir4/one/two/three", function(done){
+		mkdirp("~/toolFSTest/"+bomb_shelt+"testDir4/one/two/three", function(err, res){
 			expect(err).toEqual(undefined)
-			expect(fs.statSync(process.env.HOME+"/Workspace/tool.fs/"+bomb_shelt+"testDir4/one/two/three").isDirectory()).toBeTruthy()
+			expect(fs.statSync(process.env.HOME+"/toolFSTest/"+bomb_shelt+"testDir4/one/two/three").isDirectory()).toBeTruthy()
 			done()
 		})
 	})
@@ -72,13 +72,36 @@ describe("mkdirTree", function(){
 })
 
 describe("cpfile", function(){
-	it("should be able to copy one file", function(done){
+	it("should be able to copy single files and single directories", function(done){
 		cpfile([{
 			src: "test/data/data.json",
-			dest: bomb_shelt+"testDir1"
+			dest: bomb_shelt+"cpfile"
+		}, {
+			src: "node_modules/.bin/babel",
+			dest: bomb_shelt+"cpfile"
+		}, {
+			src: "node_modules/babel/src",
+			dest: bomb_shelt+"cpfile"
 		}], function(err, res){
 			expect(err).toBeUndefined()
-			expect(fs.statSync(bomb_shelt+"testDir1/data.json").isFile()).toBeTruthy()
+			// expect(fs.statSync(bomb_shelt+"cpfile/data.json").isFile()).toBeTruthy()
+			// expect(fs.statSync(bomb_shelt+"cpfile/babel").isFile()).toBeTruthy()
+			// expect(fs.statSync(bomb_shelt+"cpfile/youtil").isDirectory()).toBeTruthy()
+			done()
+		})
+	})
+	it("should handle globbing", function(done){
+		cpfile([{
+			src: bomb_shelt+"cpfile/**",
+			dest: bomb_shelt+"cpfile/globbing/doubleStar"
+		}, {
+			src: bomb_shelt+"../../node_modules/youtil/*.??",
+			dest: bomb_shelt+"cpfile/globbing/questionMark"
+		}, {
+			src: bomb_shelt+"cpfile/*",
+			dest: bomb_shelt+"cpfile/globbing/singleStar"
+		}], function(err, res){
+			expect(err).toBeUndefined()
 			done()
 		})
 	})

@@ -10,8 +10,6 @@ var fs = require('fs')
 
 exports.cpfile = function(srcDestObjArr, callback) {
     var callback = typeof callback === "function" ? callback : noop
-    // ,   src = path.resolve(config.src || ".") + "/"
-    // ,   dest = path.resolve(config.dest || ".") + "/"
 
     if( !util.isArray(srcDestObjArr) ) return callback(new Error("First argument to cpfiles must be a valid array."))
     srcDestObjArr.forEach(function(srcDestObj){
@@ -19,7 +17,7 @@ exports.cpfile = function(srcDestObjArr, callback) {
         ,   dest = srcDestObj.dest
 
         if( !util.isPlainObject(srcDestObj) ) return callback(new Error("Array must contain valid objects."))
-        if(!src && !dest) return callback(new Error("Object must contain a valid 'src' & 'dest' property."))
+        if(!src || !dest) return callback(new Error("Object must contain a valid 'src' & 'dest' property."))
         else {
             fs.stat(dest, function(err, stats){
                 if(err){
@@ -47,10 +45,13 @@ exports.cpfile = function(srcDestObjArr, callback) {
         fs.readdir(filePath, function(err, res){
             if(err) return callback(err)
             res.filter(minimatch.filter(pattern)).forEach(function(file){
+                let srcFile = path.resolve(filePath+file)
+
                 pending++
-                fs.lstat(filePath+file, function(err, stats){
+                fs.lstat(srcFile, function(err, stats){
                     if(err) return callback(err)
-                    cpfile(filePath+file, dest+file, stats)                    
+                    stats.isFile() && cpfile(srcFile, dest+file, stats)
+                    stats.isDirectory() && cpdir(null, srcFile, dest)
                 })
             })
         })
@@ -58,7 +59,7 @@ exports.cpfile = function(srcDestObjArr, callback) {
 
     // branch is passed in by recursive function calls.
     function cpdir(branch, src, dest){
-        branch = branch || ""
+        branch = branch || path.sep
 
         fs.readdir(src+branch, function(err, res){
             if(err) return callback(err)
@@ -73,6 +74,7 @@ exports.cpfile = function(srcDestObjArr, callback) {
                     if(stats.isFile()) {
                         cpfile(srcFile, destFile, stats)
                     } else if(stats.isDirectory()) {
+                        console.log("making ", destFile)
                         fs.mkdir(destFile, function(err) {
                             if(err) {
                                 switch(err.code) {
@@ -84,7 +86,7 @@ exports.cpfile = function(srcDestObjArr, callback) {
                                 }
                             }
                             --pending || callback()
-                            cpfile(branch+file+"/")
+                            cpdir(branch+file+"/")
                         })
                     }
                 })
@@ -132,19 +134,15 @@ exports.mkdirp = function( _path, callback = function(){} ) {
     if( typeof _path !== "string" ) return callback(new Error( "mkdirp needs a valid path."))
 
     let parts = path.resolve(_path.replace("~", process.env.HOME)).substr(1).split(path.sep)
-    process.chdir( path.sep )
+    ,   current = ""
 
     ;(function main() {
         if( parts.length > 0 ) {
-            let current = parts.shift()
+            current+=path.sep+parts.shift()
             fs.mkdir( current, function( err, res ) {
                 if(err && err.code !== "EEXIST") return callback(err)
-                process.chdir( current )
                 main()
             })
-        } else {
-            process.chdir( squareOne )
-            callback()
-        }
+        } else callback()
     })()
 }
