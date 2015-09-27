@@ -8,6 +8,52 @@ var fs = require('fs')
 ,   squareOne = process.cwd()
 ,   noop = function(){}
 
+exports.mklinkBatch = function(srcDir, destDir, links, _callback, type){
+    batchRemaining = links.length
+    callback = (typeof _callback === "function" && _callback) || callback
+
+    !Array.isArray(links) && callback(new Error("mklinkBatch needs a valid array as the third argument."))
+
+    links.forEach(function(link){
+        exports.mklink(srcDir+link, destDir+link, type)
+    })
+}
+
+exports.mklink = function(src, dest, callback, type){
+    var callback = (typeof callback === "function" && callback) || noop
+    ,   src = path.resolve(src)
+    ,   dest = path.resolve(dest)
+
+    switch(type && type.toLowerCase()){
+        case "hard":
+            type = "link"
+        break;
+        case "soft":
+        default:
+            type = "symlink"
+    }
+
+    fs.lstat(src, function(err, stats){
+        let filetype = "file"
+
+        if(err) return callback(err)
+
+        // pending++
+
+        if(stats.isDirectory()){
+            type = "symlink"
+            filetype = "dir"
+            // dest = dest.replace("./", "")
+        }
+        
+        fs[type](src, dest, filetype, callback)
+    })
+
+    // function keepCount(err, res){
+    //     --pending || callback()
+    // }
+}
+
 exports.clrdir = function(directory, callback, removeRoot) {
     var callback = (typeof directory === "function" && directory) || callback || noop
     ,   directory = (typeof directory === "string" && directory) || "."

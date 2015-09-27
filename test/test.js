@@ -6,11 +6,15 @@ require("babel/register")({
 var	fs = require("fs")
 , 	path = require("path")
 
-,	mkdirp = require("../index").mkdirp
-,	mkdirTree = require("../index").mkdirTree
-,	mkdirTreeSync = require("../index").mkdirTreeSync
-,	cpfile = require("../index").cpfile
-, 	clrdir = require("../index").clrdir
+,	toolfs = require("../index")
+
+,	mkdirp = toolfs.mkdirp
+,	mkdirTree = toolfs.mkdirTree
+,	mkdirTreeSync = toolfs.mkdirTreeSync
+,	cpfile = toolfs.cpfile
+, 	clrdir = toolfs.clrdir
+,	mklinkBatch = toolfs.mklinkBatch
+,	mklink = toolfs.mklink
 
 ,	bomb_shelt = "test/bomb_shelt/"
 ,	testData = require('./data/data.json')
@@ -123,12 +127,38 @@ describe("cpfile", function(){
 	})
 })
 
+describe("mklink", function(){
+	it("should create a soft link to a file", function(done){
+		mklink(bomb_shelt+"cpfile/README.md", bomb_shelt, function(err){
+			expect(err).toBeUndefined()
+			fs.stat(bomb_shelt+"README.md", function(err, stats){
+				expect(err).toBeUndefined()
+				if(stats) expect(stats.isSymbolicLink()).toBeTruthy()
+				done()
+			})
+		})
+	})
+	it("should create a hard link to a file", function(done){
+		mklink(bomb_shelt+"cpfile/data.json", bomb_shelt, function(err){
+			expect(err).toBeUndefined()
+			fs.stat(bomb_shelt+"data.json", function(err, stats){
+				expect(err).toBeUndefined()
+				if(stats) expect(stats.isSymbolicLink()).toBeTruthy()
+				done()
+			})
+		})
+	})
+})
+
 describe("clrdir", function(){
 	it("should clear the contents of a directory", function(done){
 		clrdir(bomb_shelt, function(err){
 			expect(err).toBeUndefined()
-			expect(fs.readdirSync(bomb_shelt)).toEqual([])
-			done()
+			fs.readdir(bomb_shelt, function(err, res){
+				expect(err).toBeUndefined()
+				if(res) expect(res).toEqual([])
+				done()
+			})
 		})
 	})
 	it("should also remove the root of the directory if passed 'true' as the "+
