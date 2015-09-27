@@ -8,17 +8,6 @@ var fs = require('fs')
 ,   squareOne = process.cwd()
 ,   noop = function(){}
 
-exports.mklinkBatch = function(srcDir, destDir, links, _callback, type){
-    batchRemaining = links.length
-    callback = (typeof _callback === "function" && _callback) || callback
-
-    !Array.isArray(links) && callback(new Error("mklinkBatch needs a valid array as the third argument."))
-
-    links.forEach(function(link){
-        exports.mklink(srcDir+link, destDir+link, type)
-    })
-}
-
 exports.mklink = function(src, dest, callback, type){
     var callback = (typeof callback === "function" && callback) || noop
     ,   src = path.resolve(src)
@@ -36,22 +25,18 @@ exports.mklink = function(src, dest, callback, type){
     fs.lstat(src, function(err, stats){
         let filetype = "file"
 
-        if(err && err.code !== "EEXIST") return callback(err)
-
-        // pending++
+        if(err) return callback(err)
 
         if(stats.isDirectory()){
             type = "symlink"
             filetype = "dir"
-            // dest = dest.replace("./", "")
         }
 
-        fs[type](src, dest, callback)
+        fs[type](src, dest, function(err){
+            if(err && err.code !== "EEXIST") return callback(err)
+            else return callback()
+        })
     })
-
-    // function keepCount(err, res){
-    //     --pending || callback()
-    // }
 }
 
 exports.clrdir = function(directory, callback, removeRoot) {
@@ -80,9 +65,9 @@ exports.clrdir = function(directory, callback, removeRoot) {
         pending += results.length
         results.forEach(function(file){
             file = (directory+path.sep).concat(file)
-            fs.stat(file, function(err, stats){
+            fs.lstat(file, function(err, stats){
                 if(err) return callback(err)
-                if(stats.isFile())
+                if(stats.isFile() || stats.isSymbolicLink())
                     fs.unlink(file, rmfileCallback)
                 else if(stats.isDirectory()){
                     exports.clrdir(file, function(err){

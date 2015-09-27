@@ -176,10 +176,20 @@ describe("mklink", function(){
 			expect(err).toBeFalsy()
 			fs.lstat(bomb_shelt+"data.json", function(err, stats){
 				expect(err).toBeFalsy()
+				stats && expect(stats.isFile()).toBeTruthy()
+				done()
+			})
+		}, "hard")
+	})
+	it("should create a soft link to a directory, even when 'hard' is passed", function(done){
+		mklink("test/data", bomb_shelt+"data", function(err){
+			expect(err).toBeFalsy()
+			fs.lstat(bomb_shelt+"data", function(err, stats){
+				expect(err).toBeFalsy()
 				stats && expect(stats.isSymbolicLink()).toBeTruthy()
 				done()
 			})
-		})
+		}, "hard")
 	})
 })
 
