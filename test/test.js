@@ -131,4 +131,12 @@ describe("clrdir", function(){
 			done()
 		})
 	})
+	it("should also remove the root of the directory if passed 'true' as the "+
+		"third parameter", function(done){
+		clrdir(bomb_shelt, function(err){
+			expect(err).toBeUndefined()
+			expect(fs.readdirSync('test')).not.toContain('bomb_shelt')
+			done()
+		}, true)
+	})
 })

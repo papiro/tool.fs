@@ -8,34 +8,41 @@ var fs = require('fs')
 ,   squareOne = process.cwd()
 ,   noop = function(){}
 
-exports.clrdir = function(directory, callback) {
+exports.clrdir = function(directory, callback, removeRoot) {
     var callback = (typeof directory === "function" && directory) || callback || noop
     ,   directory = (typeof directory === "string" && directory) || "."
-    ,   pending = 0
+    ,   _pending = 0
+
+    function rmfileCallback(err){
+        if(err) return callback()
+        !--pending && removeRoot && finishTheJob()
+        if(!--_pending) return callback()
+    }
+
+    function finishTheJob(){
+        fs.rmdir(directory, function(err){
+            if(err) return callback(err)
+        })
+    }
 
     directory = path.resolve(directory)
 
     fs.readdir(directory, function(err, results){
         if(err) return callback(err)
-        results.length || callback()
-        pending = results.length
+        results.length || removeRoot && finishTheJob() || callback()
+        _pending = results.length
+        pending += results.length
         results.forEach(function(file){
             file = (directory+path.sep).concat(file)
             fs.lstat(file, function(err, stats){
                 if(err) return callback(err)
-                if(stats.isFile()){
-                    fs.unlink(file, function(err){
-                        if(err) return callback(err)
-                        --pending || callback()
-                    })
-                } else if(stats.isDirectory()){
+                if(stats.isFile())
+                    fs.unlink(file, rmfileCallback)
+                else if(stats.isDirectory()){
                     exports.clrdir(file, function(err){
                         if(err) return callback(err)
-                        fs.rmdir(file, function(err){
-                            if(err) return callback(err)
-                            --pending || callback()
-                        })
-                    })
+                        fs.rmdir(file, rmfileCallback)
+                    })                
                 }
             })
         })
