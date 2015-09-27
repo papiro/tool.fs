@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "pretest": "",
-    "test": "jasmine-node test/ --matchall --verbose --color --captureExceptions"
+    "test": "jasmine-node test/ --matchall --verbose --color --captureExceptions",
+    "prerelease": "babel index.js -o ES5/index.js",
+    "release": "npm version minor && git tag env.npm_package_version && git push --tags"
   },
   "repository": {
     "type": "git",

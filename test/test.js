@@ -13,7 +13,6 @@ var	fs = require("fs")
 ,	mkdirTreeSync = toolfs.mkdirTreeSync
 ,	cpfile = toolfs.cpfile
 , 	clrdir = toolfs.clrdir
-,	mklinkBatch = toolfs.mklinkBatch
 ,	mklink = toolfs.mklink
 
 ,	bomb_shelt = "test/bomb_shelt/"

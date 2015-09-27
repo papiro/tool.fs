@@ -203,10 +203,10 @@ exports.mkdirTreeSync = function( dirTree, root=true ) {
     for( var node in dirTree ) {
         try{fs.mkdirSync( node )} 
         catch(e){if(e.code !== "EEXIST") throw e}
-        process.chdir( node + '/' )
+        process.chdir( node + path.sep )
         exports.mkdirTreeSync( dirTree[node], false )
     }
-    !root && process.chdir( '../' )
+    !root && process.chdir( '..' + path.sep )
 }
 
 exports.mkdirp = function( _path, callback = function(){} ) {
