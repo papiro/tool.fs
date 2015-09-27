@@ -36,7 +36,7 @@ exports.mklink = function(src, dest, callback, type){
     fs.lstat(src, function(err, stats){
         let filetype = "file"
 
-        if(err) return callback(err)
+        if(err && err.code !== "EEXIST") return callback(err)
 
         // pending++
 
@@ -45,8 +45,8 @@ exports.mklink = function(src, dest, callback, type){
             filetype = "dir"
             // dest = dest.replace("./", "")
         }
-        
-        fs[type](src, dest, filetype, callback)
+
+        fs[type](src, dest, callback)
     })
 
     // function keepCount(err, res){
@@ -80,7 +80,7 @@ exports.clrdir = function(directory, callback, removeRoot) {
         pending += results.length
         results.forEach(function(file){
             file = (directory+path.sep).concat(file)
-            fs.lstat(file, function(err, stats){
+            fs.stat(file, function(err, stats){
                 if(err) return callback(err)
                 if(stats.isFile())
                     fs.unlink(file, rmfileCallback)
