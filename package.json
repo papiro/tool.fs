@@ -4,10 +4,10 @@
   "description": "A lean collection of node utilities focused on the fs module",
   "main": "ES5/index.js",
   "scripts": {
-    "pretest": "",
     "test": "jasmine-node test/ --matchall --verbose --color --captureExceptions",
-    "prerelease": "babel index.js -o ES5/index.js",
-    "release": "npm version minor && git tag env.npm_package_version && git push --tags"
+    "prerelease": "babel index.js -o ES5/index.js && git commit -am 'transpile to ES5'",
+    "release": "npm version ",
+    "postrelease": "git push --tags"
   },
   "repository": {
     "type": "git",
