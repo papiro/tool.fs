@@ -1,6 +1,6 @@
 {
   "name": "tool.fs",
-  "version": "0.10.1",
+  "version": "0.10.2",
   "description": "A lean collection of node utilities focused on the fs module",
   "main": "ES5/index.js",
   "scripts": {
