@@ -5,7 +5,7 @@
   "main": "ES5/index.js",
   "scripts": {
     "test": "jasmine-node test/ --matchall --verbose --color --captureExceptions",
-    "prerelease": "babel index.js -o ES5/index.js && git commit -am 'transpile to ES5'",
+    "transpile": "babel index.js -o ES5/index.js && git commit ES5/index.js -m 'transpile to ES5'",
     "release": "npm version ",
     "postrelease": "git push --tags & git push"
   },
