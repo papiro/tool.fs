@@ -2,7 +2,7 @@
   "name": "tool.fs",
   "version": "0.9.0",
   "description": "A lean collection of node utilities focused on the fs module",
-  "main": "index.js",
+  "main": "ES5/index.js",
   "scripts": {
     "pretest": "",
     "test": "jasmine-node test/ --matchall --verbose --color --captureExceptions",
@@ -43,7 +43,9 @@
   "homepage": "https://github.com/papiro/tool.fs#readme",
   "devDependencies": {
     "babel": "latest",
-    "jasmine-node": "^1.14.5",
+    "jasmine-node": "^1.14.5"
+  },
+  "dependencies": {
     "minimatch": "latest",
     "youtil": "latest"
   }
