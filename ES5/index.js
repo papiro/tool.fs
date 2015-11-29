@@ -1,12 +1,10 @@
-'use strict';
-
 var fs = require('fs'),
     path = require('path'),
     util = require('youtil'),
     minimatch = require("minimatch"),
     pending = 0,
     squareOne = process.cwd(),
-    noop = function noop() {};
+    noop = function () {};
 
 exports.mklink = function (src, dest, callback, type) {
     var callback = typeof callback === "function" && callback || noop,
@@ -23,7 +21,7 @@ exports.mklink = function (src, dest, callback, type) {
     }
 
     fs.lstat(src, function (err, stats) {
-        var filetype = "file";
+        let filetype = "file";
 
         if (err) return callback(err);
 
@@ -82,7 +80,7 @@ exports.cpfile = function (srcDestObjArr, callback) {
 
     if (!util.isArray(srcDestObjArr)) return callback(new Error("First argument to cpfiles must be a valid array."));
     srcDestObjArr.forEach(function (srcDestObj) {
-        var src = path.resolve(srcDestObj.src),
+        let src = path.resolve(srcDestObj.src),
             dest = path.resolve(srcDestObj.dest);
 
         if (!util.isPlainObject(srcDestObj)) return callback(new Error("Array must contain valid objects."));
@@ -98,14 +96,14 @@ exports.cpfile = function (srcDestObjArr, callback) {
                 } else if (stats.isFile()) {
                     return callback(new Error("Destination already exists and is not a directory."));
                 } else {
-                    return callback(new Error('The destination ' + dest + ' is neither a file nor a directory.'));
+                    return callback(new Error(`The destination ${ dest } is neither a file nor a directory.`));
                 }
             });
         }
     });
 
     function cpfiles(src, dest) {
-        var fileParts = src.split(path.sep),
+        let fileParts = src.split(path.sep),
             pattern = fileParts.pop(),
             filePath = fileParts.join(path.sep);
 
@@ -115,7 +113,7 @@ exports.cpfile = function (srcDestObjArr, callback) {
             res.filter(minimatch.filter(pattern)).forEach(function (file) {
                 pending++;
 
-                var srcFile = filePath + path.sep + file,
+                let srcFile = filePath + path.sep + file,
                     destFile = dest + path.sep + file;
 
                 fs.lstat(srcFile, function (err, stats) {
@@ -192,9 +190,7 @@ exports.mkdirTree = function (dirTree, callback, parent) {
     });
 };
 
-exports.mkdirTreeSync = function (dirTree) {
-    var root = arguments.length <= 1 || arguments[1] === undefined ? true : arguments[1];
-
+exports.mkdirTreeSync = function (dirTree, root = true) {
     for (var node in dirTree) {
         try {
             fs.mkdirSync(node);
@@ -207,12 +203,10 @@ exports.mkdirTreeSync = function (dirTree) {
     !root && process.chdir('..' + path.sep);
 };
 
-exports.mkdirp = function (_path) {
-    var callback = arguments.length <= 1 || arguments[1] === undefined ? function () {} : arguments[1];
-
+exports.mkdirp = function (_path, callback = function () {}) {
     if (typeof _path !== "string") return callback(new Error("mkdirp needs a valid path."));
 
-    var parts = path.resolve(_path.replace("~", process.env.HOME)).substr(1).split(path.sep),
+    let parts = path.resolve(_path.replace("~", process.env.HOME)).substr(1).split(path.sep),
         current = "";(function main() {
         if (parts.length > 0) {
             current += path.sep + parts.shift();
